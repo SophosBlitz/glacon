@@ -1,17 +1,14 @@
-= Skybot =
+= Glacon =
+
+IRC bot used for SCP Foundation IRC channels.
 
 ==Goals==
-* simplicity
-** little boilerplate
-** minimal magic
-* power
-** multithreading
-** automatic reloading
-** extensibility
+* Provide basic in-channel data access to Foundation database(s)
+* Provide statistical analysis on the wiki
 
 ==Features==
-* Multithreaded dispatch and the ability to connect to multiple networks at a time.
-* Easy plugin development with automatic reloading and a simple hooking API.
+* Custom SCP plugins (WIP)
+* Generic Wikidot plugins (WIP)
 
 ==Requirements==
 To install dependencies, run:
@@ -21,6 +18,6 @@ To install dependencies, run:
 Skybot runs on Python 2.7.
 
 ==License==
-Skybot is public domain. If you find a way to make money using it, I'll be very impressed.
+Skybot and Glacon code are public domain. If you find a way to make money using them, at least two people will be very impressed.
 
 See LICENSE for precise terms.

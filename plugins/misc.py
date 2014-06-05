@@ -16,7 +16,7 @@ def get_version():
 
     shorthash = stdout.split(None, 1)[0]
 
-    http.ua_skybot = 'Skybot/r%d %s (http://github.com/rmmh/skybot)' \
+    http.ua_skybot = 'Glacon/r%d %s (http://github.com/SophosBlitz/glacon)' \
         % (revnumber, shorthash)
 
     return shorthash, revnumber
@@ -63,5 +63,5 @@ def onjoin(paraml, conn=None):
 @hook.regex(r'^\x01VERSION\x01$')
 def version(inp, notice=None):
     ident, rev = get_version()
-    notice('\x01VERSION skybot %s r%d - http://github.com/rmmh/'
-           'skybot/\x01' % (ident, rev))
+    notice('\x01VERSION glacon %s r%d - skybot fork - http://github.com/SophosBlitz/'
+           'glacon/\x01' % (ident, rev))

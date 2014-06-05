@@ -15,8 +15,8 @@ if not os.path.exists('config'):
             "local irc":
             {
               "server": "localhost",
-              "nick": "skybot",
-              "channels": ["#test"]
+              "nick": "glacon-clone",
+              "channels": ["#scp-progs"]
             }
           },
           "prefix": ".",
