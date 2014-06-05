@@ -18,11 +18,14 @@ class SCPThread(threading.Thread):
         db.execute("create table if not exists scps(number varchar primary key, title varchar)")
         db.text_factory = str
 
-	basescpurl = "http://www.scp-wiki.net"
-        scpseriespages = ["/scp-series", "/scp-series-2", "/scp-series-3", "/scp-ex"]
+        basescpurl = "http://www.scp-wiki.net"
+        scpseriespages = ["/scp-series", "/scp-series-2", "/scp-series-3"]
+        scpextrapages = ["/scp-ex", "/joke-scps", "/archived-scps", "/decommissioned-scps"]
+        scptalepages = ["/system:page-tags/tag/tale"]
 
         scpinterval = 60 * 5
         scpcounter = 0
+        talecounter = 0
 
 	# Infinite query loop
         while True:
@@ -30,16 +33,19 @@ class SCPThread(threading.Thread):
                 c = db.cursor()
                 c.execute("delete from scps")
                 scpcounter = 0
+                talecounter = 0
 
+                scp_re = re.compile(r'<a href="/[decom:]*scp-(.*)">SCP-\1</a> - (.*?)</li>', re.I)
+                scpx_re = re.compile(r'<a href="/scp-(.*)">SCP-\1</a> - (.*?)</li>', re.I)
 		# Grab main list entries from each page
-                for scpseriespage in scpseriespages:
+                for scpseriespage in scpseriespages+scpextrapages:
                     page = http.to_utf8(http.get(basescpurl + scpseriespage))
-                    scp_re = re.compile(r'<a href="/scp-(.*)">SCP-\1</a> - (.*?)</li>', re.I)
                     scp_list = scp_re.findall(page)
+                    print scp_list
 
                     # Add entries to database
                     for (k, v) in scp_list:
-                        #print k, v
+                        print k, v
                         c.execute(u"replace into scps(number, title) values (upper(?), ?)", (k, v))
                         scpcounter = scpcounter + 1
                     db.commit()
@@ -66,7 +72,7 @@ def scp_init(dbpath):
         scp_thread.start()
         sleep(1)
 
-@hook.regex(r'^SCP-((?:\d|-|J)+)$', re.I)
+@hook.regex(r'^SCP-((?:\w|-|J)+)$', re.I)
 def scp(inp, bot=None, input=None):
     try: inp = inp.groups()[0]
     except AttributeError: pass
@@ -78,7 +84,7 @@ def scp(inp, bot=None, input=None):
 # Query multiple SCPs at once with a comma-delimited list of !scp-xxxx tokens
 @hook.event('PRIVMSG')
 def multiscp(inp, bot=None, input=None):
-    scps = re.compile('!SCP-((?:\d|-|J)+)', re.I).findall(inp[1])
+    scps = re.compile('!SCP-((?:\w|-|J)+)', re.I).findall(inp[1])
     for scp in scps:
         input.reply(scp_lookup(scp))
 
