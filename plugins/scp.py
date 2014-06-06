@@ -16,12 +16,13 @@ class SCPThread(threading.Thread):
     def run(self):
         db = sqlite3.connect(self.dbpath)
         db.execute("create table if not exists scps(number varchar primary key, title varchar)")
+        db.execute("create table if not exists tales(page varchar primary key, title varchar)")
         db.text_factory = str
 
         basescpurl = "http://www.scp-wiki.net"
         scpseriespages = ["/scp-series", "/scp-series-2", "/scp-series-3"]
         scpextrapages = ["/scp-ex", "/joke-scps", "/archived-scps", "/decommissioned-scps"]
-        scptalepages = ["/system:page-tags/tag/tale"]
+        scptalepages = ["/system%3Apage-tags/tag/tale"]
 
         scpinterval = 60 * 5
         scpcounter = 0
@@ -35,23 +36,42 @@ class SCPThread(threading.Thread):
                 scpcounter = 0
                 talecounter = 0
 
+                # The decom: is such an ugly regex hack
                 scp_re = re.compile(r'<a href="/[decom:]*scp-(.*)">SCP-\1</a> - (.*?)</li>', re.I)
                 scpx_re = re.compile(r'<a href="/scp-(.*)">SCP-\1</a> - (.*?)</li>', re.I)
 		# Grab main list entries from each page
                 for scpseriespage in scpseriespages+scpextrapages:
                     page = http.to_utf8(http.get(basescpurl + scpseriespage))
                     scp_list = scp_re.findall(page)
-                    print scp_list
+                    #print scp_list
 
                     # Add entries to database
                     for (k, v) in scp_list:
-                        print k, v
+                        #print k, v
                         c.execute(u"replace into scps(number, title) values (upper(?), ?)", (k, v))
                         scpcounter = scpcounter + 1
                     db.commit()
                     #print "scp.py - Updated SCP database from listing on", scpseriespage
+
+                print "Grabbing tales from", (basescpurl+scptalepages[0])
+                talepage = http.get_html(basescpurl + scptalepages[0])
+                # This is so ugly, why two xpaths?
+                talelinklist = talepage.xpath("//*[@class='title']/a/@href")
+                talelist = talepage.xpath("//*[@class='title']/a/text()")
+                # Grab list of tales from the 'tale' tag page
+                for i in range(len(talelist)):
+                    talelink = talelinklist[i]
+                    taletitle = talelist[i]
+                    #print talelink#, unicode(taletitle, "utf-8")
+                    c.execute(u"replace into tales (page, title) values(?,?)",
+                        (talelink, taletitle)
+                    )
+                    talecounter = talecounter + 1
+                db.commit()
+
                 c.close()
                 print "scp.py - SCP database update complete, %d total entries." % scpcounter
+                print "scp.py - SCP tale database update complete, %d total entries." % talecounter
             except Exception, e:
                     print "ERROR ERROR ERROR, ", e
             # Query every 5 minutes
@@ -113,6 +133,30 @@ def search(inp):
     if len(scps) > 5: output += " plus %d more" % (len(scps) - 5)
     else: output = output[:-2]
     if not output: return "No SCPs found."
+    return output
+
+# Look up function for tales. Wish there was a good way that didn't involve
+# so much code duplication.
+@hook.command
+def tale(inp):
+    #print "tale command called"
+    inp = "%" + inp + "%"
+    db = sqlite3.connect(scp_path)
+    tales = db.execute("SELECT PAGE, TITLE FROM TALES WHERE TITLE LIKE ?", (inp,)).fetchall()
+    if len(tales) == 1:
+        (taleurl, title) = tales[0]
+        return u"%s - http://www.scp-wiki.net%s" % (title, taleurl)
+    printed = tales[:5]
+    #output = "http://www.scp-wiki.net" + printed[0][0] + " "
+    output = ""
+    for (taleurl, title) in printed:
+        output += title + ", "
+    if len(tales) > 5:
+        output += " plus %d more" % (len(tales) - 5)
+    else:
+        output = output[:-2]
+    if not output:
+        return u"No SCPs found."
     return output
 
 # Returns a random SCP in cached database.
