@@ -1,7 +1,7 @@
 import random
+import urllib2 # for googOpener
 
 from util import hook, http
-
 
 def api_get(query, key, is_image=None, num=1):
     url = ('https://www.googleapis.com/customsearch/v1?cx=007629729846476161907:ud5nlxktgcw'
@@ -37,3 +37,7 @@ def google(inp, api_key=None):
         out = out[:out.rfind(' ')] + '..."'
 
     return out
+
+googOpener = urllib2.build_opener()
+googOpener.addheaders = [('User-agent', 'Mozilla/5.0 (X11; Linux i686; rv:24.0) Gecko/20140429 Firefox/24.0')]
+urllib2.install_opener(googOpener)
