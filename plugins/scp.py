@@ -53,7 +53,7 @@ class SCPThread(threading.Thread):
                     db.commit()
                     #print "scp.py - Updated SCP database from listing on", scpseriespage
 
-                print "Grabbing tales from", (basescpurl+scptalepages[0])
+                #print "scp.py: Grabbing tales from", (basescpurl+scptalepages[0])
                 talepage = http.get_html(basescpurl + scptalepages[0])
                 # This is so ugly, why two xpaths?
                 talelinklist = talepage.xpath("//*[@class='title']/a/@href")
