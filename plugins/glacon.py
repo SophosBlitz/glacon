@@ -22,7 +22,7 @@ def glacon(inp, input=None):
     message = 'I am Glacon 2.0/r%d %s (http://github.com/SophosBlitz/glacon).' \
         % (revnumber, shorthash)
 
-    return message + (' Current new features include: %s' % latestFeatures)
+    return message + (' Current new features include: %s' % latestFeatures) + ' Send all bug reports and feature requests to Sophos.'
 
 @hook.command
 def source(inp):
