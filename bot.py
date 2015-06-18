@@ -6,10 +6,6 @@ import sys
 import traceback
 import time
 
-sys.path += ['plugins']  # so 'import hook' works without duplication
-sys.path += ['lib']
-os.chdir(sys.path[0] or '.')  # do stuff relative to the install directory
-
 
 class Bot(object):
     def __init__(self):
@@ -20,35 +16,44 @@ class Bot(object):
 
 bot = Bot()
 
-print 'Loading plugins'
+def main():
+    sys.path += ['plugins']  # so 'import hook' works without duplication
+    sys.path += ['lib']
+    os.chdir(sys.path[0] or '.')  # do stuff relative to the install directory
 
-# bootstrap the reloader
-eval(compile(open(os.path.join('core', 'reload.py'), 'U').read(),
-             os.path.join('core', 'reload.py'), 'exec'))
-reload(init=True)
+    print 'Loading plugins'
 
-print 'Connecting to IRC'
+    # bootstrap the reloader
+    eval(compile(open(os.path.join('core', 'reload.py'), 'U').read(),
+                 os.path.join('core', 'reload.py'), 'exec'),
+         globals())
+    reload(init=True)
 
-try:
-    config()
-    if not hasattr(bot, 'config'):
-        exit()
-except Exception, e:
-    print 'ERROR: malformed config file:', e
-    traceback.print_exc()
-    sys.exit()
+    print 'Connecting to IRC'
 
-print 'Running main loop'
+    try:
+        config()
+        if not hasattr(bot, 'config'):
+            exit()
+    except Exception, e:
+        print 'ERROR: malformed config file:', e
+        traceback.print_exc()
+        sys.exit()
 
-while True:
-    reload()  # these functions only do things
-    config()  # if changes have occured
+    print 'Running main loop'
 
-    for conn in bot.conns.itervalues():
-        try:
-            out = conn.out.get_nowait()
-            main(conn, out)
-        except Queue.Empty:
-            pass
-    while all(conn.out.empty() for conn in bot.conns.itervalues()):
-        time.sleep(.1)
+    while True:
+        reload()  # these functions only do things
+        config()  # if changes have occured
+
+        for conn in bot.conns.itervalues():
+            try:
+                out = conn.out.get_nowait()
+                main(conn, out)
+            except Queue.Empty:
+                pass
+        while all(conn.out.empty() for conn in bot.conns.itervalues()):
+            time.sleep(.1)
+
+if __name__ == '__main__':
+    main()
