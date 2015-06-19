@@ -176,9 +176,9 @@ def main(conn, out):
         # COMMANDS
         bot_prefix = re.escape(bot.config.get("prefix", "."))
         if inp.chan == inp.nick:  # private message, no command prefix required
-            prefix = r'^(?:(?:'+bot_prefix+')?|'
+            prefix = r'^(?:['+bot_prefix+']?|'
         else:
-            prefix = r'^(?:'+bot_prefix+'|'
+            prefix = r'^(?:['+bot_prefix+']|'
 
         command_re = prefix + inp.conn.nick
         command_re += r'[:,]+\s+)(\w+)(?:$|\s+)(.*)'
